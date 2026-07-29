@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Poly Planet — a chunky faceted globe, matching the in-app palette -->
+  <circle cx="32" cy="32" r="30" fill="#4c8ac4" />
+  <path d="M32 2 L54 13 L62 32 L54 51 L32 62 L10 51 L2 32 L10 13 Z" fill="#3f7cb8" />
+  <path d="M22 12 L40 8 L52 20 L44 30 L26 26 Z" fill="#3e9e4f" />
+  <path d="M14 34 L30 32 L38 42 L30 54 L14 48 Z" fill="#2f8f45" />
+  <path d="M44 36 L56 34 L54 46 L44 46 Z" fill="#57b05a" />
+  <path d="M32 2 L40 8 L22 12 L10 13 Z" fill="#f6f9fc" />
+</svg>
