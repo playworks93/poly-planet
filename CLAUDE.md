@@ -13,6 +13,29 @@ pin travel memories. This file gives Claude Code the context to work here well.
 Always run `npm run build` after non-trivial changes to confirm the app still
 compiles before considering a task done.
 
+## Git workflow
+
+`main` is protected — **never commit or push to it directly.** Every change goes
+on a branch and lands through a pull request:
+
+```bash
+git switch -c short-descriptive-branch
+# ...make the change, then commit
+git push -u origin short-descriptive-branch
+gh pr create --fill
+```
+
+- A GitHub ruleset rejects direct pushes to `main`, and a local `pre-push` hook
+  fails fast before the network round trip. If a push to `main` is refused, that
+  is working as intended — branch instead, don't reach for `--no-verify`.
+- CI (`.github/workflows/ci.yml`, job `verify`) runs `npm run lint` and
+  `npm run build` on every PR and must pass before merging. Run both locally
+  first so you aren't waiting on CI to find a lint error.
+- Branches must be up to date with `main` before merging; rebase if CI says so.
+- Merged branches are deleted automatically.
+- PRs need no approvals, so you can merge your own once `verify` is green. If
+  collaborators join, raise the required approval count.
+
 ## Layout & where things live
 
 - `src/components/PolyPlanet.jsx` — the whole app: three.js scene setup,
