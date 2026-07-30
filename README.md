@@ -7,8 +7,15 @@ short blurb about the place.
 
 Built with **React**, **three.js**, and **Vite**. No API keys required.
 
+### ▶ Try it live: **[poly-planet.vercel.app](https://poly-planet.vercel.app/)**
+
+No sign-up, nothing to install — type a place and drive there. Your trips save to
+your own browser, so nothing you add leaves your device.
+
 ![status](https://img.shields.io/badge/status-prototype-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
+[![live](https://img.shields.io/badge/live-vercel-black)](https://poly-planet.vercel.app/)
+[![CI](https://github.com/playworks93/poly-planet/actions/workflows/ci.yml/badge.svg)](https://github.com/playworks93/poly-planet/actions/workflows/ci.yml)
 
 ---
 
@@ -96,17 +103,39 @@ or simply hides that card, so it keeps working offline.
 
 ## ☁️ Deploy
 
-This is a static single-page app. [`vercel.json`](./vercel.json) sets the build
-command, output directory, and the SPA rewrite, so deploying is zero-config:
+Live on Vercel at **[poly-planet.vercel.app](https://poly-planet.vercel.app/)**,
+deployed straight from this repo. [`vercel.json`](./vercel.json) sets the build
+command, output directory, and the SPA rewrite that lets any path resolve to the
+app shell, so there's nothing to configure.
 
-1. Push this repo to GitHub.
-2. On [vercel.com](https://vercel.com), **Add New → Project** and import the repo.
-3. Accept the detected settings and deploy. Every later push gets a preview URL;
-   `main` becomes production.
+How it's wired:
+
+| Trigger | Result |
+|---------|--------|
+| Merge to `main` | Production deploy to the URL above |
+| Open a pull request | Its own preview URL, posted on the PR |
+
+`main` is protected: changes land through a pull request, and CI must pass first
+(see [Contributing](#-contributing)).
 
 Nothing here is Vercel-specific beyond that one file — the build output in `dist/`
 is plain static assets, so Cloudflare Pages, Netlify, or any static host works too
 (each needs its own SPA-fallback rule).
+
+## 🤝 Contributing
+
+`main` is protected, so all work happens on a branch:
+
+```bash
+git switch -c short-descriptive-branch
+# ...make the change
+npm run lint && npm run build   # what CI checks
+git push -u origin short-descriptive-branch
+gh pr create --fill
+```
+
+A pull request needs the `verify` check (lint + build) to pass and to be up to
+date with `main` before it can merge. Merged branches are deleted automatically.
 
 ## 🗺️ Roadmap ideas
 
