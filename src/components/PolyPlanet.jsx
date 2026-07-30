@@ -924,8 +924,16 @@ export default function PolyPlanet() {
 
     const mount = mountRef.current;
     const scene = new THREE.Scene();
+
+    // Dolly limits, shared with clampZoom() below so the start distance and the
+    // zoom-out stop can't drift apart.
+    const ZOOM_MIN = 2.0;
+    const ZOOM_MAX = 5.6;
+
     const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
-    camera.position.set(0, 0.55, 3.3);
+    // Open fully zoomed out. setLength keeps the original slightly-raised viewing
+    // angle while pushing the camera out to the zoom-out stop.
+    camera.position.set(0, 0.55, 3.3).setLength(ZOOM_MAX);
     camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -986,11 +994,19 @@ export default function PolyPlanet() {
     }
     globe.add(clouds); // ride along with the planet, plus their own gentle drift
 
-    // Sky group rides with the globe, so sun / moon / stars keep their
-    // relative positions when the planet is turned. Day/night is layered on
-    // top as the sun & moon's own animated orbit within this group.
+    // Stars ride with the globe, so the constellations stay put relative to the
+    // planet when it is turned.
     const sky = new THREE.Group();
     globe.add(sky);
+
+    // The sun and moon deliberately do NOT ride with the globe — they live in
+    // world space. They drive `sunLight`, and a light parented to `globe` has
+    // its lit hemisphere welded to the planet's surface: dragging the planet or
+    // the idle auto-spin (see `globe.rotateY` below) swings the lit side away
+    // from the camera, leaving the visible face flat and dark for half of every
+    // revolution. Keeping them here makes day/night a function of time only.
+    const sunSky = new THREE.Group();
+    scene.add(sunSky);
 
     const sunMesh = new THREE.Mesh(
       new THREE.IcosahedronGeometry(0.18, 1),
@@ -1000,7 +1016,7 @@ export default function PolyPlanet() {
       new THREE.IcosahedronGeometry(0.12, 1),
       new THREE.MeshStandardMaterial({ color: 0xdfe7f2, emissive: 0xaebfd8, emissiveIntensity: 0.35, flatShading: true })
     );
-    sky.add(sunMesh); sky.add(moonMesh);
+    sunSky.add(sunMesh); sunSky.add(moonMesh);
 
     const starPts = [];
     for (let i = 0; i < 260; i++) {
@@ -1053,7 +1069,7 @@ export default function PolyPlanet() {
 
     const clampZoom = () => {
       const len = camera.position.length();
-      const cl = THREE.MathUtils.clamp(len, 2.0, 5.6);
+      const cl = THREE.MathUtils.clamp(len, ZOOM_MIN, ZOOM_MAX);
       camera.position.multiplyScalar(cl / len);
     };
     const onDown = (e) => {
@@ -1193,11 +1209,22 @@ export default function PolyPlanet() {
       halo.material.opacity = 0.02 + 0.06 * (1 - n);
       headlightMat.emissiveIntensity = 0.3 + 1.5 * n;
       const sunA = (t - 0.25) * Math.PI * 2;
+      // The visible sun/moon orbit sits at -z, far enough from the camera to stay
+      // inside the frustum and read as "in the sky". Pulling it to +z would put it
+      // ~2 units from the camera, where the frustum is far narrower than the orbit,
+      // and it would spend most of the cycle off-screen.
       sunMesh.position.set(Math.sin(sunA) * 2.8, Math.cos(sunA) * 2.0, -1.2);
       moonMesh.position.set(-Math.sin(sunA) * 2.8, -Math.cos(sunA) * 2.0, -1.2);
-      // directional light must follow the light source in WORLD space
-      const activeLight = Math.cos(sunA) > -0.15 ? sunMesh : moonMesh;
-      activeLight.getWorldPosition(sunLight.position);
+
+      // The light is positioned independently of the mesh, on the same orbit angle
+      // but at +z so it front-lights the hemisphere you're actually looking at.
+      // Slaving it to the mesh instead would leave the visible face permanently
+      // rim-lit, which is what read as "the lighting is missing". The sun mesh and
+      // its light sitting on opposite sides in depth is a deliberate stylised
+      // cheat: the mesh is decoration, the light is what has to look right.
+      const isSunUp = Math.cos(sunA) > -0.15;
+      const dir = isSunUp ? 1 : -1; // the moon rides the opposite side of the orbit
+      sunLight.position.set(Math.sin(sunA) * 2.8 * dir, Math.cos(sunA) * 2.0 * dir, 2.4);
 
       // clouds drift on their own axis, but in the globe's local frame so the
       // drift stays steady while the whole planet is turned by the user
