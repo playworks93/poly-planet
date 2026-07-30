@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import PolyPlanet from "./components/PolyPlanet.jsx";
 import SceneErrorBoundary from "./components/SceneErrorBoundary.jsx";
 import SceneUnavailable from "./components/SceneUnavailable.jsx";
@@ -10,11 +11,19 @@ export default function App() {
   // anything that still fails during three.js setup.
   const [webgl] = useState(isWebGLAvailable);
 
-  if (!webgl) return <SceneUnavailable />;
+  if (!webgl) return (
+    <>
+      <SceneUnavailable />
+      <Analytics />
+    </>
+  );
 
   return (
-    <SceneErrorBoundary>
-      <PolyPlanet />
-    </SceneErrorBoundary>
+    <>
+      <SceneErrorBoundary>
+        <PolyPlanet />
+      </SceneErrorBoundary>
+      <Analytics />
+    </>
   );
 }
