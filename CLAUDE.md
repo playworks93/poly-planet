@@ -58,8 +58,15 @@ gh pr create --fill
 - **Terrain is two flat tiers** (ocean ≈ r1.0, land ≈ r1.035) displaced *per face*
   so coastlines form clean cliffs; a post-process removes speck islands and fills
   landlocked lakes. Don't reintroduce per-vertex displacement (it ramps coasts).
-- **Everything rotates with the globe:** clouds, sun, moon, and stars are children
-  of the `globe` group. Keep new world objects parented to it.
+- **Surface objects rotate with the globe:** clouds, stars, trees, mountains,
+  landmarks, markers and the car are children of the `globe` group. Parent new
+  world objects there so they stay put relative to the planet when it turns.
+- **The sun and moon are the exception — they live in world space** (`sunSky`,
+  a child of `scene`). They drive `sunLight`, and parenting a light to `globe`
+  welds the lit hemisphere to the surface, so dragging the planet or the idle
+  auto-spin swings the light away and the visible face goes dark. Their orbit
+  also keeps `z` positive to stay on the camera's side. Don't move them back
+  under `globe`.
 - **APIs are best-effort:** every fetch must fall back gracefully (null → hide the
   card, or use the bundled atlas). Never let a failed request break the app.
 - **Storage is async and may fail** (quota/private mode). Handle the `false`
